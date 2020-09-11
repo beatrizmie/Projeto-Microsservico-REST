@@ -1,36 +1,45 @@
 from fastapi import FastAPI, Query
-from pydantic import BaseModel, Field
+from pydantic import Field, BaseModel
 from uuid import UUID
 
-class Tarefa(BaseModel):
+class Task(BaseModel):
     name: str
     description: str = Field(..., description="Breve descrição da tarefa", min_length=3, max_length=50)
-    is_done: bool
+    is_done: bool = False
 
-lista_tarefas = {}
+task_list = {}
 
 app = FastAPI()
 
-#CREATE NEW TAREFA
-@app.post("/tarefa")
-async def create_tarefa(tarefa: Tarefa):
-    tarefa_dict = tarefa.dict()
-    lista_tarefas[tarefa.name] = tarefa_dict
-    return tarefa_dict
+#CREATE NEW TASK
+@app.post("/tasks/")
+async def create_task(task: Task):
+    task_dict = task.dict()
 
-#READ TAREFA
-@app.get("/tarefas")
-async def get_tarefas():
-    return lista_tarefas
+    task_list[task.name] = task_dict
 
-#UPDATE TAREFA
-@app.put("/tarefa/{id_tarefa}")
-async def update_tarefa(id_tarefa: int, tarefa: Tarefa):
-    return {"id_tarefa": id_tarefa, **tarefa.dict()}
+    return task_dict
 
-#DELETE TAREFA
-@app.delete("/tarefa/{id_tarefa}")
-async def delete_tarefa(id_tarefa: int, tarefa: Tarefa):
-    for i in lista_tarefas:
-        if tarefa == i:
-            lista_tarefas.remove(i)
+#READ TASK
+@app.get("/tasks/")
+async def list_task():
+    return task_list
+
+# #UPDATE TASK
+@app.put("/tasks/{task_name}")
+async def update_task(task_name: str, task: Task):
+
+    task_dict = task.dict()
+
+    task_list[task.name] = task_dict
+
+    return task_dict
+
+#DELETE TASK
+@app.delete("/tasks/{task_name}")
+async def delete_task(task_name: str):
+    if task_name in task_list:
+        del task_list[task_name]
+
+    return task_list
+    
