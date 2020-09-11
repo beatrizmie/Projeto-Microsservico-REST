@@ -25,7 +25,7 @@ async def create_task(task: Task):
 async def list_task():
     return task_list
 
-# #UPDATE TASK
+#UPDATE TASK
 @app.put("/tasks/{task_name}")
 async def update_task(task_name: str, task: Task):
 
