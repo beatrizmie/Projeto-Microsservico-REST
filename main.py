@@ -21,9 +21,24 @@ async def create_task(task: Task):
 
 #READ TASK
 @app.get("/tasks/")
-async def list_task():
+async def list_tasks():
     return task_list
 
+@app.get("/tasks/list/{is_done}")
+async def list_is_done_tasks(is_done: bool):
+    result1 = {}
+    result2 = {}
+
+    for task_name in task_list:
+        if task_list[task_name]["is_done"] == 1:
+            result1[task_name] = task_list[task_name]
+        else:
+            result2[task_name] = task_list[task_name]
+    
+    if is_done:
+        return result1
+    else:
+        return result2
 
 #UPDATE TASK DESCRIPTION
 @app.put("/tasks/{task_name}/description")
