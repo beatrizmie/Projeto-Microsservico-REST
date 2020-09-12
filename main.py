@@ -62,18 +62,18 @@ async def update_task_name(task_id: UUID, task_name: str):
     if task_id in task_list:
         task_list[task_id].update({"name": task_name})
         return {task_id: task_list[task_id]}
-    return "The task {task_id} doesn't exist!"
+    return {"The task {task_id} doesn't exist!"}
 
 
 #UPDATE TASK DESCRIPTION
 @app.put("/tasks/{task_id}/description", tags=["task"])
 async def update_task_description(task_id: UUID, task_description: str):
-    if task_description.len() < 3:
+    if len(task_description) < 3:
         return "Task description must have at least 3 characters!"
     if task_id in task_list:
         task_list[task_id].update({"description": task_description})
         return {task_id: task_list[task_id]}
-    return "The task {task_id} doesn't exist!"
+    return {"The task {task_id} doesn't exist!"}
 
 
 #UPDATE TASK IS_DONE
@@ -85,7 +85,7 @@ async def update_task_is_done(task_id: UUID):
         else:
             task_list[task_id].update({"is_done": True})
         return {task_id: task_list[task_id]}
-    return "The task {task_id} doesn't exist!"
+    return {"The task {task_id} doesn't exist!"}
 
 
 #DELETE TASK
@@ -94,7 +94,7 @@ async def delete_task(task_id: UUID):
     if task_id in task_list:
         del task_list[task_id]
         return task_list
-    return "The task {task_id} doesn't exist!"
+    return {"The task {task_id} doesn't exist!"}
 
 
 #CUSTOMIZE DOCUMENTATION
