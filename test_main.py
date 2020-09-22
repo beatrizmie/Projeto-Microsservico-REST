@@ -1,6 +1,5 @@
 from fastapi.testclient import TestClient
 from main import app
-from uuid import UUID
 
 client = TestClient(app)
 
@@ -64,7 +63,7 @@ def test_update_task_name_using_non_existent_task_id():
     assert response.status_code == 404
     assert response.json() == {'detail': 'Task not found'}
 
-def test_update_task_name_using_wrong_type_of_variable():
+def test_update_task_name_using_wrong_type_of_parameter():
     response = client.put(
         '/tasks/string/name?task_name=heyy',
     )
@@ -98,7 +97,7 @@ def test_update_task_description_using_non_existent_task_id():
     assert response.status_code == 404
     assert response.json() == {'detail': 'Task not found'}
 
-def test_update_task_description_using_wrong_type_of_variable():
+def test_update_task_description_using_wrong_type_of_parameter():
     response = client.put(
         '/tasks/string/description?task_description=heyy everybody',
     )
@@ -143,7 +142,7 @@ def test_update_task_is_done_using_non_existing_task_id():
     assert response.status_code == 404
     assert response.json() == {'detail': 'Task not found'}
 
-def test_update_task_is_done_using_wrong_type_of_variable():
+def test_update_task_is_done_using_wrong_type_of_parameter():
     response = client.put(
         '/tasks/true/is_done'
     )
@@ -164,3 +163,23 @@ def test_delete_task():
         '/tasks/d5c1c91b-3cf3-4694-861c-1f7935f12ab5'
     )
     assert response.status_code == 200
+
+def test_delete_task_using_non_existing_id():
+    response = client.delete(
+        '/tasks/d5c1c91b-3cf3-4694-861c-1f7935f12aa5'
+    )
+    assert response.status_code == 404
+
+def test_delete_task_using_wrong_type_of_parameter():
+    response = client.delete(
+        '/tasks/string'
+    )
+    assert response.status_code == 422
+    assert response.json() == {
+        'detail': [{
+            'loc': ['path', 'task_id'],
+            'msg': 'value is not a valid uuid',
+            'type': 'type_error.uuid'
+            }
+        ]
+    }
