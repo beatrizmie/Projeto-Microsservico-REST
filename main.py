@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, status
+from fastapi import FastAPI, HTTPException, Query, status
 from fastapi.openapi.utils import get_openapi
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -12,14 +12,46 @@ tags_metadata = [
     }
 ]
 
-app = FastAPI(openapi_tags=tags_metadata)
+app = FastAPI(
+    title='Tasks List',
+    description='Tasks list project for the **Megadados** course',
+    openapi_tags=tags_metadata
+    )
 
 
 class Task(BaseModel):
     name: str = Field(None, title="Task name", description="optional")
     description: str = Field(..., description="Brief task description", min_length=3, max_length=50)
 
-task_list = {}
+test_uuid =[
+    UUID('d5c1c91b-3cf3-4694-861c-1f7935f12ab2'), 
+    UUID('d5c1c91b-3cf3-4694-861c-1f7935f12ab3'),
+    UUID('d5c1c91b-3cf3-4694-861c-1f7935f12ab4'),
+    UUID('d5c1c91b-3cf3-4694-861c-1f7935f12ab5')
+] 
+
+task_list = {
+  test_uuid[0]: {
+    "name": "hello",
+    "description": "hello everyone",
+    "is_done": False
+  },
+  test_uuid[1]: {
+    "name": "bia",
+    "description": "heyy bia",
+    "is_done": False
+  },
+  test_uuid[2]:  {
+    "name": "samu",
+    "description": "heyy samu",
+    "is_done": False
+  },
+  test_uuid[3]:  {
+    "name": "samu",
+    "description": "heyy samu",
+    "is_done": True
+  },
+}
 
 
 #CREATE NEW TASK
@@ -29,7 +61,7 @@ async def create_task(task: Task):
     task_dict = task.dict()
     task_dict.update({"is_done": False})
     task_list[task_id] = task_dict
-    return {task_id: task_dict}
+    return task_dict
 
 
 #READ ALL TASKS
@@ -61,8 +93,12 @@ async def list_tasks_done_or_not_done(is_done: bool):
 async def update_task_name(task_id: UUID, task_name: str):
     if task_id in task_list:
         task_list[task_id].update({"name": task_name})
-        return {task_id: task_list[task_id]}
-    return {"The task {task_id} doesn't exist!"}
+        return task_list[task_id]
+    else:
+        raise HTTPException(
+            status_code=404,
+            detail='Task not found',
+        )
 
 
 #UPDATE TASK DESCRIPTION
@@ -72,8 +108,12 @@ async def update_task_description(task_id: UUID, task_description: str):
         return "Task description must have at least 3 characters!"
     if task_id in task_list:
         task_list[task_id].update({"description": task_description})
-        return {task_id: task_list[task_id]}
-    return {"The task {task_id} doesn't exist!"}
+        return task_list[task_id]
+    else:
+        raise HTTPException(
+            status_code=404,
+            detail='Task not found',
+        )
 
 
 #UPDATE TASK IS_DONE
@@ -84,8 +124,12 @@ async def update_task_is_done(task_id: UUID):
             task_list[task_id].update({"is_done": False})
         else:
             task_list[task_id].update({"is_done": True})
-        return {task_id: task_list[task_id]}
-    return {"The task {task_id} doesn't exist!"}
+        return task_list[task_id]
+    else:
+        raise HTTPException(
+            status_code=404,
+            detail='Task not found',
+        )
 
 
 #DELETE TASK
@@ -93,8 +137,11 @@ async def update_task_is_done(task_id: UUID):
 async def delete_task(task_id: UUID):
     if task_id in task_list:
         del task_list[task_id]
-        return task_list
-    return {"The task {task_id} doesn't exist!"}
+    else:
+        raise HTTPException(
+            status_code=404,
+            detail='Task not found',
+        )
 
 
 #CUSTOMIZE DOCUMENTATION
