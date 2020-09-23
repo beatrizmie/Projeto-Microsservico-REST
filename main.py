@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query, status
+from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.openapi.utils import get_openapi
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -30,101 +30,120 @@ test_uuid =[
     UUID('d5c1c91b-3cf3-4694-861c-1f7935f12ab5')
 ] 
 
-task_list = {
-  test_uuid[0]: {
-    "name": "hello",
-    "description": "hello everyone",
-    "is_done": False
-  },
-  test_uuid[1]: {
-    "name": "bia",
-    "description": "heyy bia",
-    "is_done": False
-  },
-  test_uuid[2]:  {
-    "name": "samu",
-    "description": "heyy samu",
-    "is_done": False
-  },
-  test_uuid[3]:  {
-    "name": "samu",
-    "description": "heyy samu",
-    "is_done": True
-  },
-}
+class DBSession:
+    task_list = {
+        test_uuid[0]: {
+            "name": "hello",
+            "description": "hello everyone",
+            "is_done": False
+        },
+        test_uuid[1]: {
+            "name": "bia",
+            "description": "heyy bia",
+            "is_done": False
+        },
+        test_uuid[2]:  {
+            "name": "samu",
+            "description": "heyy samu",
+            "is_done": False
+        },
+        test_uuid[3]:  {
+            "name": "samu",
+            "description": "heyy samu",
+            "is_done": True
+        },
+    }
+
+    def __init__(self):
+        self.task_list = DBSession.task_list
+
+    def return_tasks_list(self):
+        return self.task_list
+
+    def task_in_task_list(self, task_id: UUID):
+        if task_id in self.task_list:
+            return True
+        else:
+            return False
+
+    def check_done_or_not_done(self):
+        done_tasks = {}
+        not_done_tasks = {}
+
+        for task in self.task_list:
+            if self.task_list[task]["is_done"] == True:
+                done_tasks[task] = self.task_list[task]
+            else:
+                not_done_tasks[task] = self.task_list[task]
+
+        return done_tasks, not_done_tasks
+
+    def update_task(self, task_id: UUID, dictionary: dict()):
+        if self.task_in_task_list(task_id):
+            self.task_list[task_id].update(dictionary)
+            self.return_tasks_list()
+        else:
+            raise HTTPException(
+                status_code=404,
+                detail='Task not found',
+            )
+
+
+def get_db():
+    return DBSession()
 
 
 #CREATE NEW TASK
 @app.post("/tasks/{task_id}", status_code=status.HTTP_201_CREATED, tags=["task"])
-async def create_task(task: Task):
+async def create_task(task: Task, db: DBSession = Depends(get_db)):
     task_id = uuid.uuid4()
     task_dict = task.dict()
     task_dict.update({"is_done": False})
-    task_list[task_id] = task_dict
+    db.task_list[task_id] = task_dict
     return task_dict
 
 
 #READ ALL TASKS
 @app.get("/tasks/", tags=["task"])
-async def list_all_tasks():
-    return task_list
+async def list_all_tasks(db: DBSession = Depends(get_db)):
+    return db.return_tasks_list
 
 
 #READ ALL DONE TASKS OR ALL NOT DONE TASKS
 @app.get("/tasks/list/{is_done}", tags=["task"])
-async def list_tasks_done_or_not_done(is_done: bool):
-    result1 = {}
-    result2 = {}
-
-    for task_id in task_list:
-        if task_list[task_id]["is_done"] == 1:
-            result1[task_id] = task_list[task_id]
-        else:
-            result2[task_id] = task_list[task_id]
+async def list_tasks_done_or_not_done(is_done: bool, db: DBSession = Depends(get_db)):
     
+    done_tasks, not_done_tasks = db.check_done_or_not_done()
+
     if is_done:
-        return result1
+        return done_tasks
     else:
-        return result2
+        return not_done_tasks
 
 
 #UPDATE TASK NAME
 @app.put("/tasks/{task_id}/name", tags=["task"])
-async def update_task_name(task_id: UUID, task_name: str):
-    if task_id in task_list:
-        task_list[task_id].update({"name": task_name})
-        return task_list[task_id]
-    else:
-        raise HTTPException(
-            status_code=404,
-            detail='Task not found',
-        )
+async def update_task_name(task_id: UUID, task_name: str, db: DBSession = Depends(get_db)):
+    db.update_task(task_id, {"name": task_name})
 
 
 #UPDATE TASK DESCRIPTION
 @app.put("/tasks/{task_id}/description", tags=["task"])
-async def update_task_description(task_id: UUID, task_description: str):
+async def update_task_description(task_id: UUID, task_description: str, db: DBSession = Depends(get_db)):
     if len(task_description) < 3:
         return "Task description must have at least 3 characters!"
-    if task_id in task_list:
-        task_list[task_id].update({"description": task_description})
-        return task_list[task_id]
-    else:
-        raise HTTPException(
-            status_code=404,
-            detail='Task not found',
-        )
+    db.update_task(task_id, {"description": task_description})
 
 
 #UPDATE TASK IS_DONE
 @app.put("/tasks/{task_id}/is_done", tags=["task"])
-async def update_task_is_done(task_id: UUID):
-    if task_id in task_list:
-        if task_list[task_id]["is_done"] == True:
-            task_list[task_id].update({"is_done": False})
+async def update_task_is_done(task_id: UUID, db: DBSession = Depends(get_db)):
+    if task_id in db.task_list:
+        if db.task_list[task_id]["is_done"] == True:
+            db.task_list[task_id].update({"is_done": False})
         else:
-            task_list[task_id].update({"is_done": True})
-        return task_list[task_id]
+            db.task_list[task_id].update({"is_done": True})
+        return db.task_list[task_id]
     else:
         raise HTTPException(
             status_code=404,
@@ -134,9 +153,9 @@ async def update_task_is_done(task_id: UUID):
 
 #DELETE TASK
 @app.delete("/tasks/{task_id}", tags=["task"])
-async def delete_task(task_id: UUID):
-    if task_id in task_list:
-        del task_list[task_id]
+async def delete_task(task_id: UUID, db: DBSession = Depends(get_db)):
+    if task_id in db.task_list:
+        del db.task_list[task_id]
     else:
         raise HTTPException(
             status_code=404,

@@ -6,13 +6,15 @@
   "test_main.py::test_list_all_not_done_tasks",
   "test_main.py::test_update_task_name",
   "test_main.py::test_update_task_name_using_non_existent_task_id",
-  "test_main.py::test_update_task_name_using_wrong_type_of_variable",
+  "test_main.py::test_update_task_name_using_wrong_type_of_parameter",
   "test_main.py::test_update_task_description",
   "test_main.py::test_update_task_description_using_non_existent_task_id",
-  "test_main.py::test_update_task_description_using_wrong_type_of_variable",
+  "test_main.py::test_update_task_description_using_wrong_type_of_parameter",
   "test_main.py::test_update_task_is_done",
   "test_main.py::test_update_task_is_not_done",
   "test_main.py::test_update_task_is_done_using_non_existing_task_id",
-  "test_main.py::test_update_task_is_done_using_wrong_type_of_variable",
-  "test_main.py::test_delete_task"
+  "test_main.py::test_update_task_is_done_using_wrong_type_of_parameter",
+  "test_main.py::test_delete_task",
+  "test_main.py::test_delete_task_using_non_existing_id",
+  "test_main.py::test_delete_task_using_wrong_type_of_parameter"
 ]

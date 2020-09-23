@@ -1,6 +1,9 @@
 {
   "routers/test_main.py": true,
   "test_main.py::test_create_item": true,
+  "test_main.py::test_create_task_already_done": true,
   "test_main.py::test_create_task_using_already_existing_id": true,
-  "test_main.py::test_create_task_with_wrong_type_of_variables": true
+  "test_main.py::test_create_task_with_wrong_type_of_variables": true,
+  "test_main.py::test_update_task_description": true,
+  "test_main.py::test_update_task_name": true
 }
