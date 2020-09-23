@@ -24,7 +24,7 @@ async def create_task(task: Task, db: DBSession = Depends(get_db)):
 #READ ALL TASKS
 @router.get("/")
 async def list_all_tasks(db: DBSession = Depends(get_db)):
-    return db.return_tasks_list
+    return db.return_tasks_list()
 
 
 #READ ALL DONE TASKS OR ALL NOT DONE TASKS
@@ -42,14 +42,7 @@ async def list_tasks_done_or_not_done(is_done: bool, db: DBSession = Depends(get
 #UPDATE TASK NAME
 @router.put("/{task_id}/name")
 async def update_task_name(task_id: UUID, task_name: str, db: DBSession = Depends(get_db)):
-    if task_id in db.task_list:
-        db.task_list[task_id].update({"name": task_name})
-        return db.task_list[task_id]
-    else:
-        raise HTTPException(
-            status_code=404,
-            detail='Task not found',
-        )
+    return db.update_task_string(task_id, task_name, "name")
 
 
 #UPDATE TASK DESCRIPTION
@@ -57,39 +50,16 @@ async def update_task_name(task_id: UUID, task_name: str, db: DBSession = Depend
 async def update_task_description(task_id: UUID, task_description: str, db: DBSession = Depends(get_db)):
     if len(task_description) < 3:
         return "Task description must have at least 3 characters!"
-    if task_id in db.task_list:
-        db.task_list[task_id].update({"description": task_description})
-        return db.task_list[task_id]
-    else:
-        raise HTTPException(
-            status_code=404,
-            detail='Task not found',
-        )
+    return db.update_task_string(task_id, task_description, "description")
 
 
 #UPDATE TASK IS_DONE
 @router.put("/{task_id}/is_done")
 async def update_task_is_done(task_id: UUID, db: DBSession = Depends(get_db)):
-    if task_id in db.task_list:
-        if db.task_list[task_id]["is_done"] == True:
-            db.task_list[task_id].update({"is_done": False})
-        else:
-            db.task_list[task_id].update({"is_done": True})
-        return db.task_list[task_id]
-    else:
-        raise HTTPException(
-            status_code=404,
-            detail='Task not found',
-        )
+    return db.update_task_is_done(task_id)
 
 
 #DELETE TASK
 @router.delete("/{task_id}")
 async def delete_task(task_id: UUID, db: DBSession = Depends(get_db)):
-    if task_id in db.task_list:
-        del db.task_list[task_id]
-    else:
-        raise HTTPException(
-            status_code=404,
-            detail='Task not found',
-        )
+    db.delete_task(task_id)

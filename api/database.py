@@ -57,16 +57,37 @@ class DBSession:
 
         return done_tasks, not_done_tasks
 
-    def update_task(self, task_id: UUID, task_name: str, key: str):
+    def update_task_string(self, task_id: UUID, task: str, key: str):
         if self.task_in_task_list(task_id):
-            self.task_list[task_id].update({key: task_name})
-            self.return_tasks_list()
+            self.task_list[task_id].update({key: task})
+            return self.task_list[task_id]
         else:
             raise HTTPException(
                 status_code=404,
                 detail='Task not found',
             )
 
+    def update_task_is_done(self, task_id: UUID):
+        if self.task_in_task_list(task_id):
+            if self.task_list[task_id]["is_done"] == True:
+                self.task_list[task_id].update({"is_done": False})
+            else:
+                self.task_list[task_id].update({"is_done": True})
+            return self.task_list[task_id]
+        else:
+            raise HTTPException(
+                status_code=404,
+                detail='Task not found',
+            )
+
+    def delete_task(self, task_id: UUID):
+        if self.task_in_task_list(task_id):
+            del self.task_list[task_id]
+        else:
+            raise HTTPException(
+                status_code=404,
+                detail='Task not found',
+            )
 
 
 def get_db():
