@@ -78,15 +78,6 @@ class DBSession:
 
         return done_tasks, not_done_tasks
 
-    def update_task(self, task_id: UUID, dictionary: dict()):
-        if self.task_in_task_list(task_id):
-            self.task_list[task_id].update(dictionary)
-            self.return_tasks_list()
-        else:
-            raise HTTPException(
-                status_code=404,
-                detail='Task not found',
-            )
 
 
 def get_db():
@@ -124,7 +115,14 @@ async def list_tasks_done_or_not_done(is_done: bool, db: DBSession = Depends(get
 #UPDATE TASK NAME
 @app.put("/tasks/{task_id}/name", tags=["task"])
 async def update_task_name(task_id: UUID, task_name: str, db: DBSession = Depends(get_db)):
-    db.update_task(task_id, {"name": task_name})
+    if task_id in db.task_list:
+        db.task_list[task_id].update({"name": task_name})
+        return db.task_list[task_id]
+    else:
+        raise HTTPException(
+            status_code=404,
+            detail='Task not found',
+        )
 
 
 #UPDATE TASK DESCRIPTION
@@ -132,7 +130,14 @@ async def update_task_name(task_id: UUID, task_name: str, db: DBSession = Depend
 async def update_task_description(task_id: UUID, task_description: str, db: DBSession = Depends(get_db)):
     if len(task_description) < 3:
         return "Task description must have at least 3 characters!"
-    db.update_task(task_id, {"description": task_description})
+    if task_id in db.task_list:
+        db.task_list[task_id].update({"description": task_description})
+        return db.task_list[task_id]
+    else:
+        raise HTTPException(
+            status_code=404,
+            detail='Task not found',
+        )
 
 
 #UPDATE TASK IS_DONE
