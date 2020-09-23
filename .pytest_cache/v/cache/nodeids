@@ -1,7 +1,6 @@
 [
   "test_main.py::test_read_main_returns_not_found",
   "test_main.py::test_create_task",
-  "test_main.py::test_create_task_already_done",
   "test_main.py::test_list_all_tasks",
   "test_main.py::test_list_all_done_tasks",
   "test_main.py::test_list_all_not_done_tasks",
